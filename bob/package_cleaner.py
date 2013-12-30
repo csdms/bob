@@ -2,6 +2,7 @@ import os
 
 from .read import packages_from_file
 from .clean import Cleaner
+from .package_builder import BuildOrder
 
 
 class PackageCleaner(object):
@@ -18,7 +19,10 @@ class PackageCleaner(object):
 
         script = []
 
-        for package in args:
+        clean_order = BuildOrder(*args, packages=self._packages)
+
+        #for package in args:
+        for package in clean_order.order:
             files = self._packages[package]._options['clean'].split(os.linesep)
             cleaner = Cleaner(files)
             script.append(cleaner.tobash())
