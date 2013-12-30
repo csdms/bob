@@ -1,11 +1,13 @@
+import os
 from ConfigParser import SafeConfigParser
 
 from .fetch import SvnFetcher, WgetFetcher
 from .unpack import TarUnpacker, XzUnpacker
 from .build import (CmakeBuilder, MakeBuilder, AutotoolsBuilder,
-                    ContractorBuilder, )
+                    ContractorBuilder, EmptyBuilder)
+from .install import InstallExecutable
 from .build_script import BuildScript
-from .bash_commands import Echo
+from .bash_commands import Echo, ChangeDir
 
 
 _FETCH_METHODS = {
@@ -38,6 +40,7 @@ class PackageConfig(object):
         else:
             requires = []
         self._requires = [base.strip() for base in requires]
+        self._top_build_dir = os.getcwd()
 
     @property
     def name(self):
@@ -48,11 +51,12 @@ class PackageConfig(object):
         return self._requires
 
     def tobash(self):
+        to_top_dir = ChangeDir(self._top_build_dir)
         steps = [
-            self._construct_fetch_step(),
-            self._construct_unpack_step(),
-            self._construct_build_step(),
-            self._construct_install_step(),
+            to_top_dir, self._construct_fetch_step(),
+            to_top_dir, self._construct_unpack_step(),
+            to_top_dir, self._construct_build_step(),
+            to_top_dir, self._construct_install_step(),
         ]
         script = BuildScript(steps)
         return script.tobash()
