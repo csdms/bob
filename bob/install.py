@@ -1,3 +1,6 @@
+from .bash_commands import TemplateScript
+
+
 class InstallExecutable(TemplateScript):
     """Install a file.
     """
