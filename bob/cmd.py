@@ -8,7 +8,7 @@ from .subcommands import list, show, build, clean, pack
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser('Let Bob do the building')
+    parser = argparse.ArgumentParser(description='Let Bob do the building')
     subparsers = parser.add_subparsers()
 
     list_parser = subparsers.add_parser('list', help='list known packages')
@@ -20,6 +20,9 @@ def main():
 
     build_parser = subparsers.add_parser('build', help='build packages')
     build_parser.add_argument('packages', nargs='*', help='packages to build')
+    build_parser.add_argument('-p', '--package-file',
+                              type=argparse.FileType('r'),
+                              help='package file')
     build_parser.add_argument('--run', default=False, action='store_true',
                               help='packages to build')
     build_parser.set_defaults(func=build)
@@ -31,6 +34,10 @@ def main():
     clean_parser.set_defaults(func=clean)
 
     pack_parser = subparsers.add_parser('pack', help='pack up a distribution')
+    pack_parser.add_argument('prefix', help='path to folder to pack')
+    pack_parser.add_argument('name', help='distribution name')
+    pack_parser.add_argument('-v', '--version', default=None,
+                             help='distribution version')
     pack_parser.add_argument('--force', default=False, action='store_true',
                              help='overwrite existing files')
     pack_parser.set_defaults(func=pack)

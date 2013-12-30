@@ -36,10 +36,17 @@ def build(args):
     builder = PackageBuilder()
     builder.read('packages.cfg')
 
+    try:
+        packages = args.package_file.read().split()
+    except AttributeError:
+        packages = []
+
+    packages.extend(args.packages)
+
     lines = [SheBang('/bin/bash').tobash()]
     lines.append(env.tobash())
-    if len(args.packages) > 0:
-        for package in args.packages:
+    if len(packages) > 0:
+        for package in packages:
             lines.append(builder.tobash(package))
     else:
         lines.append(builder.tobash())
@@ -77,20 +84,26 @@ def clean(args):
         print(script)
 
 
+def make_distribution_name(name, version=None):
+    import os
+
+    if version is not None:
+        name = '-'.join([name, version])
+
+    (sysname, nodename, release, version, machine) = os.uname()
+    return '-'.join([name, sysname.lower(), machine])
+
+
 def pack(args):
     import tarfile
 
-    env = BuilderEnvironment()
-    prefix = env._environ['PREFIX']
+    tar_file = '.'.join([make_distribution_name(args.name,
+                                                version=args.version),
+                         'tar.gz'])
 
-    (sysname, nodename, release, version, machine) = os.uname()
-    prog_name = 'csdms_tools'
-    prog_version = '0.1'
-    tar_file = '-'.join([prog_name, prog_version,
-                         sysname.lower(), machine]) + '.tar.gz'
     if os.path.isfile(tar_file) and not args.force:
         print('%s: file exists, not overwriting. use --force to overwrite.' %
               tar_file)
     else:
         with tarfile.open(tar_file, 'w:gz') as tar:
-            tar.add(prefix)
+            tar.add(args.prefix)
