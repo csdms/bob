@@ -33,3 +33,13 @@ class Echo(object):
 
     def tobash(self):
         return 'echo %s' % self._msg
+
+
+class ChangeDir(object):
+    """cd ${dir}
+    """
+    def __init__(self, dir):
+        self._dir = dir
+
+    def tobash(self):
+        return 'cd %s' % self._dir
